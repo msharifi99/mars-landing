@@ -18,10 +18,18 @@ class Player extends Ellipse {
 
     this.scene = scene
     this.cursors = scene.input.keyboard.createCursorKeys()
+  addedToScene() {
+    this.body.setDamping(true)
   }
 
   preUpdate() {
-    const resultAcc = new Phaser.Math.Vector2()
+    this.body.setDrag(0.9, 1)
+
+    if (this.body.onFloor()) {
+      this.body.setDragX(0.00001)
+    }
+
+    const resultAcc = new Phaser.Math.Vector2(0, 0)
     if (this.cursors.down.isDown) {
       const upwardAcc = new Phaser.Math.Vector2(0, -800)
       resultAcc.add(upwardAcc)
@@ -34,18 +42,6 @@ class Player extends Ellipse {
     if (this.cursors.right.isDown) {
       const leftAcc = new Phaser.Math.Vector2(-250, 0)
       resultAcc.add(leftAcc)
-    }
-
-    if (!this.cursors.left.isDown && !this.cursors.right.isDown) {
-      if (Math.abs(this.body.velocity.x) < 5) {
-        this.body.setVelocityX(0)
-      } else {
-        const currentHorizontalDirection = Math.sign(this.body.velocity.x)
-        const frictionValue = this.body.onFloor() ? 500 : 100
-        const friction = currentHorizontalDirection * -1 * frictionValue
-        const leftAcc = new Phaser.Math.Vector2(friction, 0)
-        resultAcc.add(leftAcc)
-      }
     }
 
     this.body.setAcceleration(resultAcc.x, resultAcc.y)
