@@ -9,6 +9,7 @@ class Player extends Ellipse {
   body: Physics.Arcade.Body
   cursors: Types.Input.Keyboard.CursorKeys
   scene: Scene
+  fuel: number
   constructor(scene: Scene) {
     const width = 60
     const height = 100
@@ -18,6 +19,9 @@ class Player extends Ellipse {
 
     this.scene = scene
     this.cursors = scene.input.keyboard.createCursorKeys()
+    this.fuel = 100
+  }
+
   addedToScene() {
     this.body.setDamping(true)
   }
@@ -30,6 +34,14 @@ class Player extends Ellipse {
     }
 
     const resultAcc = new Phaser.Math.Vector2(0, 0)
+
+    const hasFuel = this.fuel > Phaser.Math.EPSILON
+
+    if (!hasFuel) {
+      this.body.setAcceleration(0, 0)
+      return
+    }
+
     if (this.cursors.down.isDown) {
       const upwardAcc = new Phaser.Math.Vector2(0, -800)
       resultAcc.add(upwardAcc)
@@ -45,6 +57,7 @@ class Player extends Ellipse {
     }
 
     this.body.setAcceleration(resultAcc.x, resultAcc.y)
+    this.fuel -= resultAcc.length() / 1000
   }
 
   onCollide(collider: Types.Physics.Arcade.GameObjectWithBody) {
