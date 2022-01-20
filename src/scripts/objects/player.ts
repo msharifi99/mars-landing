@@ -1,6 +1,5 @@
-import { Vector } from 'matter'
 import { GameObjects, Physics, Scene, Types } from 'phaser'
-import Ground from './ground'
+import FuelGauge from './fuelGauge'
 import Platform from './platform'
 
 const { Ellipse } = GameObjects
@@ -45,26 +44,36 @@ class Player extends Ellipse {
     if (this.cursors.down.isDown) {
       const upwardAcc = new Phaser.Math.Vector2(0, -800)
       resultAcc.add(upwardAcc)
+      this.updateFuel(upwardAcc)
     }
     if (this.cursors.left.isDown) {
       const rightAcc = new Phaser.Math.Vector2(250, 0)
       resultAcc.add(rightAcc)
+      this.updateFuel(rightAcc)
     }
 
     if (this.cursors.right.isDown) {
       const leftAcc = new Phaser.Math.Vector2(-250, 0)
       resultAcc.add(leftAcc)
+      this.updateFuel(leftAcc)
     }
 
     this.body.setAcceleration(resultAcc.x, resultAcc.y)
-    this.fuel -= resultAcc.length() / 1000
+  }
+
+  updateFuel(acceleration: Phaser.Math.Vector2) {
+    const reducedFuel = acceleration.length() / 1000
+    this.fuel = Phaser.Math.Clamp(this.fuel - reducedFuel, 0, this.fuel)
+    FuelGauge.getInstance(this.scene).progress.set(this.fuel / 100)
   }
 
   onCollide(collider: Types.Physics.Arcade.GameObjectWithBody) {
-    if (collider instanceof Platform) {
-      const zeroInHorizontal = new Phaser.Math.Vector2(0, 1)
-      this.body.velocity.multiply(zeroInHorizontal)
-    }
+    if (!(collider instanceof Platform)) return
+    this.fuel = 100
+    FuelGauge.getInstance(this.scene).progress.animate(1, {
+      duration: 300,
+      easing: 'easeOut'
+    })
   }
 }
 
