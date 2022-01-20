@@ -9,6 +9,7 @@ export default class MainScene extends Phaser.Scene {
   grounds: Physics.Arcade.StaticGroup
   platforms: Physics.Arcade.StaticGroup
   lastPlatform: Platform
+  lastLandedPlatform: Platform
   constructor() {
     super({ key: 'MainScene' })
   }
@@ -25,7 +26,11 @@ export default class MainScene extends Phaser.Scene {
       FuelGauge.destroyInstance()
       this.scene.restart() // restart current scene
     })
-    this.physics.add.collider(this.player, this.platforms, (player, platform) => this.player.onCollide(platform))
+    this.physics.add.collider(this.player, this.platforms, (player, platform) => {
+      if (!(player as Player).body.onFloor()) return
+      this.calculateScore(platform as Platform)
+      this.player.onCollide(platform)
+    })
   }
 
   update() {
@@ -135,5 +140,16 @@ export default class MainScene extends Phaser.Scene {
       platformToMove.body.updateFromGameObject()
       this.lastPlatform = platformToMove
     }
+  }
+  calculateScore(landedPlatform: Platform) {
+    if (this.lastLandedPlatform && landedPlatform !== this.lastLandedPlatform) {
+      const passedPlatforms = this.platforms
+        .getChildren()
+        .filter(
+          item => (item as Platform).x > this.lastLandedPlatform.x && (item as Platform).x <= landedPlatform.x
+        ).length
+      Score.getInstance(this).increaseScore(passedPlatforms)
+    }
+    this.lastLandedPlatform = landedPlatform
   }
 }
