@@ -15,10 +15,6 @@ class FuelGauge extends GameObjects.DOMElement {
 
     super(scene, x + width / 2, y + height / 2, progressContainer, `width: ${width}px; height: ${height}px`)
 
-    progressContainer.style.display = 'block'
-    progressContainer.style.pointerEvents = 'auto'
-    progressContainer.style.transform = `translate(${x}px, ${y}px)`
-
     this.progress = new ProgressBar.Circle(progressContainer, {
       duration: 300,
       easing: 'easeOut',

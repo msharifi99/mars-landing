@@ -3,6 +3,7 @@ import FuelGauge from '../objects/fuelGauge'
 import Ground from '../objects/ground'
 import Platform from '../objects/platform'
 import Player from '../objects/player'
+import Score from '../objects/score'
 
 export default class MainScene extends Phaser.Scene {
   player: Player
@@ -19,11 +20,13 @@ export default class MainScene extends Phaser.Scene {
     this.platforms = this.addPlatforms()
     this.lastPlatform = this.platforms.getChildren()[this.platforms.getLength() - 1] as Platform
     this.player = this.addPlayer()
-    FuelGauge.getInstance(this)
+    this.add.existing(FuelGauge.getInstance(this))
+    this.add.existing(Score.getInstance(this))
 
     this.physics.add.collider(this.grounds, this.player, () => {
       this.registry.destroy() // destroy registry
       FuelGauge.destroyInstance()
+      Score.destroyInstance()
       this.scene.restart() // restart current scene
     })
     this.physics.add.collider(this.player, this.platforms, (player, platform) => {
