@@ -41,21 +41,24 @@ class Player extends Ellipse {
       return
     }
 
+    const isAnyKeyDown = this.cursors.down.isDown || this.cursors.left.isDown || this.cursors.right.isDown
+
     if (this.cursors.down.isDown) {
       const upwardAcc = new Phaser.Math.Vector2(0, -800)
       resultAcc.add(upwardAcc)
-      this.updateFuel(upwardAcc)
     }
     if (this.cursors.left.isDown) {
       const rightAcc = new Phaser.Math.Vector2(250, 0)
       resultAcc.add(rightAcc)
-      this.updateFuel(rightAcc)
     }
 
     if (this.cursors.right.isDown) {
       const leftAcc = new Phaser.Math.Vector2(-250, 0)
       resultAcc.add(leftAcc)
-      this.updateFuel(leftAcc)
+    }
+
+    if (isAnyKeyDown) {
+      this.updateFuel(resultAcc)
     }
 
     this.body.setAcceleration(resultAcc.x, resultAcc.y)
@@ -69,11 +72,13 @@ class Player extends Ellipse {
 
   onCollide(collider: Types.Physics.Arcade.GameObjectWithBody) {
     if (!(collider instanceof Platform)) return
-    this.fuel = 100
-    FuelGauge.getInstance(this.scene).progress.animate(1, {
-      duration: 300,
-      easing: 'easeOut'
-    })
+    if (this.fuel !== 100) {
+      this.fuel = 100
+      FuelGauge.getInstance(this.scene).progress.animate(1, {
+        duration: 300,
+        easing: 'easeOut'
+      })
+    }
   }
 }
 
