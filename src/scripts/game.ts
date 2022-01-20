@@ -15,6 +15,9 @@ const config: Phaser.Types.Core.GameConfig = {
     width: DEFAULT_WIDTH,
     height: DEFAULT_HEIGHT
   },
+  dom: {
+    createContainer: true
+  },
   scene: [PreloadScene, MainScene],
   physics: {
     default: 'arcade',
