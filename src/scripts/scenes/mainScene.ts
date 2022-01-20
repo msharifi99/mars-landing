@@ -88,19 +88,29 @@ export default class MainScene extends Phaser.Scene {
     })
     return group
   }
+  getRandomPlatformHeight() {
+    const groundHeight = (this.grounds.getChildren()[0] as Ground).height
+    const zeroY = this.cameras.main.height - groundHeight
+    const maxY = zeroY - 300
+
+    return Math.round(zeroY - Math.random() * maxY)
+  }
 
   addPlatforms() {
+    const xMargin = 300
+
     const groundHeight = (this.grounds.getChildren()[0] as Ground).height
+    const zeroY = this.cameras.main.height - groundHeight
 
     const platformObjects = [
-      new Platform(this, 0, this.cameras.main.height - groundHeight, 80),
-      new Platform(this, 250, this.cameras.main.height - groundHeight, 80),
-      new Platform(this, 250 * 2, this.cameras.main.height - groundHeight, 80),
-      new Platform(this, 250 * 3, this.cameras.main.height - groundHeight, 80),
-      new Platform(this, 250 * 4, this.cameras.main.height - groundHeight, 80),
-      new Platform(this, 250 * 5, this.cameras.main.height - groundHeight, 80),
-      new Platform(this, 250 * 6, this.cameras.main.height - groundHeight, 80),
-      new Platform(this, 250 * 7, this.cameras.main.height - groundHeight, 80)
+      new Platform(this, 0, zeroY, 80),
+      new Platform(this, xMargin, zeroY, 80),
+      new Platform(this, xMargin * 2, this.getRandomPlatformHeight(), 80),
+      new Platform(this, xMargin * 3, this.getRandomPlatformHeight(), 80),
+      new Platform(this, xMargin * 4, this.getRandomPlatformHeight(), 80),
+      new Platform(this, xMargin * 5, this.getRandomPlatformHeight(), 80),
+      new Platform(this, xMargin * 6, this.getRandomPlatformHeight(), 80),
+      new Platform(this, xMargin * 7, this.getRandomPlatformHeight(), 80)
     ]
 
     return this.addExistingGroupObject(platformObjects, true)
@@ -136,7 +146,7 @@ export default class MainScene extends Phaser.Scene {
       let margin = 250 + Math.floor(cameraXBeginPosition / 1000) * 100
       margin = margin > this.cameras.main.width ? this.cameras.main.width - 250 : margin
       let x = this.lastPlatform.x + margin
-      platformToMove.setPosition(x, platformToMove.y)
+      platformToMove.setPosition(x, this.getRandomPlatformHeight())
       platformToMove.body.updateFromGameObject()
       this.lastPlatform = platformToMove
     }
