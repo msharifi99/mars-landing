@@ -1,26 +1,31 @@
 import { GameObjects, Physics } from 'phaser'
+import FuelGauge from '../objects/fuelGauge'
 import Ground from '../objects/ground'
 import Platform from '../objects/platform'
 import Player from '../objects/player'
+
 export default class MainScene extends Phaser.Scene {
   player: Player
   grounds: Physics.Arcade.StaticGroup
   platforms: Physics.Arcade.StaticGroup
-  lastPlatform: Platform | undefined
+  lastPlatform: Platform
   constructor() {
     super({ key: 'MainScene' })
   }
 
   create() {
-    this.player = this.addPlayer()
     this.grounds = this.addGrounds()
     this.platforms = this.addPlatforms()
+    this.lastPlatform = this.platforms.getChildren()[this.platforms.getLength() - 1] as Platform
+    this.player = this.addPlayer()
+    FuelGauge.getInstance(this)
 
     this.physics.add.collider(this.grounds, this.player, () => {
       this.registry.destroy() // destroy registry
+      FuelGauge.destroyInstance()
       this.scene.restart() // restart current scene
     })
-    this.physics.add.collider(this.platforms, this.player, collidedPlatform => this.player.onCollide(collidedPlatform))
+    this.physics.add.collider(this.player, this.platforms, (player, platform) => this.player.onCollide(platform))
   }
 
   update() {
@@ -92,6 +97,7 @@ export default class MainScene extends Phaser.Scene {
       new Platform(this, 250 * 6, this.cameras.main.height - groundHeight, 80),
       new Platform(this, 250 * 7, this.cameras.main.height - groundHeight, 80)
     ]
+
     return this.addExistingGroupObject(platformObjects, true)
   }
 
@@ -110,9 +116,9 @@ export default class MainScene extends Phaser.Scene {
     const groundToMove = groundObjects.find(ground => cameraXBeginPosition - ground.x > ground.width)
 
     if (groundToMove) {
-      let x = groundToMove.x + groundToMove.width * 3
+      let x = groundToMove.x + groundToMove.width * groundObjects.length
       groundToMove.setPosition(x, groundToMove.y)
-      this.grounds.refresh()
+      groundToMove.body.updateFromGameObject()
     }
   }
 
@@ -124,11 +130,10 @@ export default class MainScene extends Phaser.Scene {
     if (platformToMove) {
       let margin = 250 + Math.floor(cameraXBeginPosition / 1000) * 100
       margin = margin > this.cameras.main.width ? this.cameras.main.width - 250 : margin
-      const lastPlatformX = this.lastPlatform ? this.lastPlatform.x : platformObjects[platformObjects.length - 1].x
-      let x = lastPlatformX + margin
+      let x = this.lastPlatform.x + margin
       platformToMove.setPosition(x, platformToMove.y)
+      platformToMove.body.updateFromGameObject()
       this.lastPlatform = platformToMove
-      this.platforms.refresh()
     }
   }
 }
