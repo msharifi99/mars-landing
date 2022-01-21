@@ -51,6 +51,11 @@ class Player extends Ellipse {
 
     const isAnyKeyDown = this.cursors.down.isDown || this.cursors.left.isDown || this.cursors.right.isDown
 
+    if (isBodyOnFloor && isAnyKeyDown) {
+      const initialAcc = new Phaser.Math.Vector2(0, -15000)
+      resultAcc.add(initialAcc)
+    }
+
     if (this.cursors.down.isDown) {
       const upwardAcc = new Phaser.Math.Vector2(0, -800)
       resultAcc.add(upwardAcc)
