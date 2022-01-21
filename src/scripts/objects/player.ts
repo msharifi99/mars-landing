@@ -23,11 +23,21 @@ class Player extends Ellipse {
     this.body.setDamping(true)
   }
 
-  preUpdate() {
+  preUpdate(timestamp, timeFrame) {
     this.body.setDrag(0.9, 1)
 
-    if (this.body.onFloor()) {
-      this.body.setDragX(0.00001)
+    const isBodyOnFloor = this.body.onFloor()
+
+    if (isBodyOnFloor) {
+      this.body.setVelocity(0)
+    }
+
+    const distanceFromPlatformCenter = Math.abs(this.x - Number(this.landedPlatform?.x))
+    if (isBodyOnFloor && this.landedPlatform && distanceFromPlatformCenter > 0.1) {
+      const x = (this.landedPlatform.x - this.x) / (timeFrame / 2)
+      this.setPosition(this.x + x, this.y)
+      this.body.updateFromGameObject()
+      return
     }
 
     const resultAcc = new Phaser.Math.Vector2(0, 0)
@@ -70,6 +80,7 @@ class Player extends Ellipse {
 
   onCollide(collider: Types.Physics.Arcade.GameObjectWithBody) {
     if (!(collider instanceof Platform)) return
+    this.landedPlatform = collider
     if (this.fuel !== 100) {
       this.fuel = 100
       FuelGauge.getInstance(this.scene).progress.animate(1, {
