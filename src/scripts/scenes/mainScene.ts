@@ -191,7 +191,9 @@ export default class MainScene extends Phaser.Scene {
 
   calculatePlatformXMargin(level: number = this.getLevel()) {
     const xMarginRange =
-      level >= xMarginRangeByLevel.length ? xMarginRangeByLevel[xMarginRangeByLevel.length] : xMarginRangeByLevel[level]
+      level >= xMarginRangeByLevel.length
+        ? xMarginRangeByLevel[xMarginRangeByLevel.length - 1]
+        : xMarginRangeByLevel[level]
 
     return this.cameras.main.centerX + Math.round(Math.random() * xMarginRange[1] + xMarginRange[0])
   }
