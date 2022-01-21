@@ -32,6 +32,8 @@ export default class MainScene extends Phaser.Scene {
     this.physics.add.collider(this.player, this.platforms, (player, platform) => {
       if (!(player as Player).body.onFloor()) return
       this.calculateScore(platform as Platform)
+      this.panCameraToNextPlatform(platform as Platform)
+      this.lastLandedPlatform = platform as Platform
       this.player.onCollide(platform)
     })
   }
@@ -54,7 +56,8 @@ export default class MainScene extends Phaser.Scene {
   }
 
   addPlayer() {
-    const player = new Player(this)
+    const firstPlatform = this.platforms.getChildren()[0] as Platform
+    const player = new Player(this, firstPlatform.x, firstPlatform.y - 100)
     this.addExistingObject(player)
     player.body.setCollideWorldBounds()
 
@@ -100,21 +103,17 @@ export default class MainScene extends Phaser.Scene {
   }
 
   addPlatforms() {
-    const xMargin = 300
+    const xMargin = this.cameras.main.centerX + 100
 
     const groundHeight = (this.grounds.getChildren()[0] as Ground).height
     const zeroY = this.cameras.main.height - groundHeight
 
-    const platformObjects = [
-      new Platform(this, 0, zeroY, 80),
-      new Platform(this, xMargin, zeroY, 80),
-      new Platform(this, xMargin * 2, this.getRandomPlatformHeight(), 80),
-      new Platform(this, xMargin * 3, this.getRandomPlatformHeight(), 80),
-      new Platform(this, xMargin * 4, this.getRandomPlatformHeight(), 80),
-      new Platform(this, xMargin * 5, this.getRandomPlatformHeight(), 80),
-      new Platform(this, xMargin * 6, this.getRandomPlatformHeight(), 80),
-      new Platform(this, xMargin * 7, this.getRandomPlatformHeight(), 80)
-    ]
+    const platformObjects = Array(7)
+      .fill(1)
+      .map(
+        (_, index) =>
+          new Platform(this, xMargin * index + 100, index === 0 ? zeroY : this.getRandomPlatformHeight(), 80)
+      )
 
     return this.addExistingGroupObject(platformObjects, true)
   }
@@ -123,9 +122,21 @@ export default class MainScene extends Phaser.Scene {
     const playerX = this.player.x
 
     const playerXRelativeToCameraWidth = (playerX - this.cameras.main.scrollX) / this.cameras.main.width
-    if (playerXRelativeToCameraWidth > 0.5) {
-      this.cameras.main.pan(playerX, this.cameras.main.centerY, 0)
+    const threshold = 0.9
+    if (playerXRelativeToCameraWidth > threshold) {
+      const newXCenter = playerX - this.cameras.main.width * (threshold - 0.5)
+      this.cameras.main.pan(newXCenter, this.cameras.main.centerY, 0)
     }
+  }
+
+  panCameraToNextPlatform(landedPlatform: Platform) {
+    if (!this.lastLandedPlatform || this.lastLandedPlatform === landedPlatform) return
+    this.cameras.main.pan(
+      this.cameras.main.centerX + landedPlatform.x - 100,
+      this.cameras.main.centerY,
+      1000,
+      Phaser.Math.Easing.Cubic.InOut
+    )
   }
 
   reuseGrounds() {
@@ -163,6 +174,5 @@ export default class MainScene extends Phaser.Scene {
         ).length
       Score.getInstance(this).increaseScore(passedPlatforms)
     }
-    this.lastLandedPlatform = landedPlatform
   }
 }
