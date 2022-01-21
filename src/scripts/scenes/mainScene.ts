@@ -16,6 +16,7 @@ export default class MainScene extends Phaser.Scene {
   grounds: Physics.Arcade.StaticGroup
   platforms: Physics.Arcade.StaticGroup
   lastPlatform: Platform
+  lastLandedPlatformX: number
   tempScore: number = 1
   constructor() {
     super({ key: 'MainScene' })
@@ -25,6 +26,7 @@ export default class MainScene extends Phaser.Scene {
     this.grounds = this.addGrounds()
     this.platforms = this.addPlatforms()
     this.lastPlatform = this.platforms.getChildren()[this.platforms.getLength() - 1] as Platform
+    this.lastLandedPlatformX = (this.platforms.getChildren()[0] as Platform).x
     this.player = this.addPlayer()
     this.add.existing(FuelGauge.getInstance(this))
     this.add.existing(Score.getInstance(this))
@@ -37,9 +39,9 @@ export default class MainScene extends Phaser.Scene {
     })
     this.physics.add.collider(this.player, this.platforms, (player, platform) => {
       if (!(player as Player).body.onFloor()) return
-      this.calculateScore(platform as Platform)
       this.panCameraToNextPlatform(platform as Platform)
-      this.lastLandedPlatform = platform as Platform
+      this.calculateScore(platform as Platform)
+      this.lastLandedPlatformX = (platform as Platform).x
       this.player.onCollide(platform)
     })
   }
@@ -139,7 +141,7 @@ export default class MainScene extends Phaser.Scene {
   }
 
   panCameraToNextPlatform(landedPlatform: Platform) {
-    if (!this.lastLandedPlatform || this.lastLandedPlatform === landedPlatform) return
+    if (this.lastLandedPlatformX === landedPlatform.x) return
     this.cameras.main.pan(
       this.cameras.main.centerX + landedPlatform.x - 100,
       this.cameras.main.centerY,
