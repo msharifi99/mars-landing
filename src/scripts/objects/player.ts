@@ -9,11 +9,9 @@ class Player extends Ellipse {
   cursors: Types.Input.Keyboard.CursorKeys
   scene: Scene
   fuel: number
-  constructor(scene: Scene) {
+  constructor(scene: Scene, x, y) {
     const width = 60
     const height = 100
-    const x = scene.cameras.main.centerX - 300
-    const y = scene.cameras.main.height - 400
     super(scene, x, y, width, height, 0x777777)
 
     this.scene = scene
