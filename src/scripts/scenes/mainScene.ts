@@ -16,7 +16,7 @@ export default class MainScene extends Phaser.Scene {
   grounds: Physics.Arcade.StaticGroup
   platforms: Physics.Arcade.StaticGroup
   lastPlatform: Platform
-  lastLandedPlatform: Platform
+  tempScore: number = 1
   constructor() {
     super({ key: 'MainScene' })
   }
@@ -163,9 +163,13 @@ export default class MainScene extends Phaser.Scene {
   reusePlatforms() {
     const cameraXBeginPosition = this.cameras.main.scrollX
     const platformObjects = this.platforms.getChildren() as Platform[]
+
     const platformToMove = platformObjects.find(platform => cameraXBeginPosition - platform.x > platform.width)
 
     if (platformToMove) {
+      if (!this.player.body.onFloor()) {
+        this.tempScore++
+      }
       const xMargin = this.calculatePlatformXMargin()
       const x = this.lastPlatform.x + xMargin
       platformToMove.setPosition(x, this.getRandomPlatformHeight())
@@ -174,14 +178,9 @@ export default class MainScene extends Phaser.Scene {
     }
   }
   calculateScore(landedPlatform: Platform) {
-    if (this.lastLandedPlatform && landedPlatform !== this.lastLandedPlatform) {
-      const passedPlatforms = this.platforms
-        .getChildren()
-        .filter(
-          item => (item as Platform).x > this.lastLandedPlatform.x && (item as Platform).x <= landedPlatform.x
-        ).length
-      Score.getInstance(this).increaseScore(passedPlatforms)
-    }
+    if (landedPlatform.x === this.lastLandedPlatformX) return
+    Score.getInstance(this).increaseScore(this.tempScore)
+    this.tempScore = 1
   }
 
   getLevel() {
