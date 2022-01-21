@@ -5,6 +5,12 @@ import Platform from '../objects/platform'
 import Player from '../objects/player'
 import Score from '../objects/score'
 
+const xMarginRangeByLevel = [
+  [-100, 0],
+  [0, 100],
+  [100, 200]
+]
+
 export default class MainScene extends Phaser.Scene {
   player: Player
   grounds: Physics.Arcade.StaticGroup
@@ -103,16 +109,19 @@ export default class MainScene extends Phaser.Scene {
   }
 
   addPlatforms() {
-    const xMargin = this.cameras.main.centerX + 100
-
     const groundHeight = (this.grounds.getChildren()[0] as Ground).height
     const zeroY = this.cameras.main.height - groundHeight
 
-    const platformObjects = Array(7)
+    const platformObjects = Array(3)
       .fill(1)
       .map(
         (_, index) =>
-          new Platform(this, xMargin * index + 100, index === 0 ? zeroY : this.getRandomPlatformHeight(), 80)
+          new Platform(
+            this,
+            this.calculatePlatformXMargin(0) * index + 100,
+            index === 0 ? zeroY : this.getRandomPlatformHeight(),
+            80
+          )
       )
 
     return this.addExistingGroupObject(platformObjects, true)
@@ -122,8 +131,8 @@ export default class MainScene extends Phaser.Scene {
     const playerX = this.player.x
 
     const playerXRelativeToCameraWidth = (playerX - this.cameras.main.scrollX) / this.cameras.main.width
-    const threshold = 0.9
-    if (playerXRelativeToCameraWidth > threshold) {
+    const threshold = 0.6
+    if (playerXRelativeToCameraWidth > threshold && !this.player.body.onFloor()) {
       const newXCenter = playerX - this.cameras.main.width * (threshold - 0.5)
       this.cameras.main.pan(newXCenter, this.cameras.main.centerY, 0)
     }
@@ -157,9 +166,8 @@ export default class MainScene extends Phaser.Scene {
     const platformToMove = platformObjects.find(platform => cameraXBeginPosition - platform.x > platform.width)
 
     if (platformToMove) {
-      let margin = 250 + Math.floor(cameraXBeginPosition / 1000) * 100
-      margin = margin > this.cameras.main.width ? this.cameras.main.width - 250 : margin
-      let x = this.lastPlatform.x + margin
+      const xMargin = this.calculatePlatformXMargin()
+      const x = this.lastPlatform.x + xMargin
       platformToMove.setPosition(x, this.getRandomPlatformHeight())
       platformToMove.body.updateFromGameObject()
       this.lastPlatform = platformToMove
@@ -174,5 +182,16 @@ export default class MainScene extends Phaser.Scene {
         ).length
       Score.getInstance(this).increaseScore(passedPlatforms)
     }
+  }
+
+  getLevel() {
+    return Math.floor(Score.getInstance(this).score / 10)
+  }
+
+  calculatePlatformXMargin(level: number = this.getLevel()) {
+    const xMarginRange =
+      level >= xMarginRangeByLevel.length ? xMarginRangeByLevel[xMarginRangeByLevel.length] : xMarginRangeByLevel[level]
+
+    return this.cameras.main.centerX + Math.round(Math.random() * xMarginRange[1] + xMarginRange[0])
   }
 }
