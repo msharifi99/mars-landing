@@ -133,7 +133,7 @@ export default class MainScene extends Phaser.Scene {
     const playerX = this.player.x
 
     const playerXRelativeToCameraWidth = (playerX - this.cameras.main.scrollX) / this.cameras.main.width
-    const threshold = 0.6
+    const threshold = 0.4
     if (playerXRelativeToCameraWidth > threshold && !this.player.body.onFloor()) {
       const newXCenter = playerX - this.cameras.main.width * (threshold - 0.5)
       this.cameras.main.pan(newXCenter, this.cameras.main.centerY, 0)
