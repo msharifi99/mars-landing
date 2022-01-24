@@ -9,6 +9,8 @@ class Player extends Ellipse {
   cursors: Types.Input.Keyboard.CursorKeys
   scene: Scene
   fuel: number
+  landedPlatform: Platform | undefined
+  initializerKeyCode: number | undefined
   constructor(scene: Scene, x, y) {
     const width = 60
     const height = 100
@@ -33,7 +35,7 @@ class Player extends Ellipse {
     }
 
     const distanceFromPlatformCenter = Math.abs(this.x - Number(this.landedPlatform?.x))
-    if (isBodyOnFloor && this.landedPlatform && distanceFromPlatformCenter > 0.1) {
+    if (isBodyOnFloor && this.landedPlatform && distanceFromPlatformCenter > 0.05) {
       const x = (this.landedPlatform.x - this.x) / (timeFrame / 2)
       this.setPosition(this.x + x, this.y)
       this.body.updateFromGameObject()
@@ -41,6 +43,7 @@ class Player extends Ellipse {
     }
 
     const resultAcc = new Phaser.Math.Vector2(0, 0)
+    const initialAcc = new Phaser.Math.Vector2(0, 0)
 
     const hasFuel = this.fuel > Phaser.Math.EPSILON
 
@@ -52,20 +55,25 @@ class Player extends Ellipse {
     const isAnyKeyDown = this.cursors.down.isDown || this.cursors.left.isDown || this.cursors.right.isDown
 
     if (isBodyOnFloor && isAnyKeyDown) {
-      const initialAcc = new Phaser.Math.Vector2(0, -15000)
-      resultAcc.add(initialAcc)
+      initialAcc.set(7000, -25000)
+
+      const initializer = this.scene.input.keyboard.keys.filter(v => Boolean(v) && v.isDown)[0]
+      this.initializerKeyCode = initializer.keyCode
+      initializer.once(Phaser.Input.Keyboard.Events.UP, () => {
+        this.initializerKeyCode = undefined
+      })
     }
 
-    if (this.cursors.down.isDown) {
+    if (this.cursors.down.isDown && this.initializerKeyCode !== this.cursors.down.keyCode) {
       const upwardAcc = new Phaser.Math.Vector2(0, -800)
       resultAcc.add(upwardAcc)
     }
-    if (this.cursors.left.isDown) {
+    if (this.cursors.left.isDown && this.initializerKeyCode !== this.cursors.left.keyCode) {
       const rightAcc = new Phaser.Math.Vector2(250, 0)
       resultAcc.add(rightAcc)
     }
 
-    if (this.cursors.right.isDown) {
+    if (this.cursors.right.isDown && this.initializerKeyCode !== this.cursors.right.keyCode) {
       const leftAcc = new Phaser.Math.Vector2(-250, 0)
       resultAcc.add(leftAcc)
     }
@@ -74,7 +82,7 @@ class Player extends Ellipse {
       this.updateFuel(resultAcc)
     }
 
-    this.body.setAcceleration(resultAcc.x, resultAcc.y)
+    this.body.setAcceleration(resultAcc.x + initialAcc.x, resultAcc.y + initialAcc.y)
   }
 
   updateFuel(acceleration: Phaser.Math.Vector2) {
