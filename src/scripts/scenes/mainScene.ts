@@ -129,14 +129,31 @@ export default class MainScene extends Phaser.Scene {
   }
 
   panCamera() {
-    const playerX = this.player.x
+    if (this.player.body.onFloor()) return
 
-    const playerXRelativeToCameraWidth = (playerX - this.cameras.main.scrollX) / this.cameras.main.width
-    const threshold = 0.4
-    if (playerXRelativeToCameraWidth > threshold && !this.player.body.onFloor()) {
-      const newXCenter = playerX - this.cameras.main.width * (threshold - 0.5)
-      this.cameras.main.pan(newXCenter, this.cameras.main.centerY, 0)
+    let newXCenter = this.cameras.main.centerX + this.cameras.main.scrollX
+    const isPlayerPassedLandedPlatform = this.player.x > this.lastLandedPlatformX
+    const isPlayerTooFarFromLeftSide = this.player.x - this.cameras.main.scrollX > 200
+    if (isPlayerPassedLandedPlatform && isPlayerTooFarFromLeftSide) {
+      const xStep = 10 / Math.log(Math.abs(this.player.x - this.lastLandedPlatformX + 1))
+      newXCenter += xStep
     }
+
+    const YThreshold = 0.4
+    let newYCenter = this.cameras.main.centerY + this.cameras.main.scrollY
+
+    const isPlayerHigherThenThreshold = this.player.y < this.cameras.main.height * YThreshold
+    const isPlayerInScreen = this.player.y > 0
+    if (isPlayerHigherThenThreshold && isPlayerInScreen) {
+      const rangeBeginning = this.cameras.main.height * YThreshold
+      const rangeEnding = rangeBeginning * 2
+
+      const precentOfScreenWherePlayerShouldBe =
+        (this.player.y - rangeBeginning) * (0.2 / (rangeEnding - rangeBeginning)) + YThreshold
+      newYCenter = this.player.y - this.cameras.main.height * (precentOfScreenWherePlayerShouldBe - 0.5)
+    }
+
+    this.cameras.main.pan(newXCenter, newYCenter, 0)
   }
 
   panCameraToNextPlatform(landedPlatform: Platform) {
