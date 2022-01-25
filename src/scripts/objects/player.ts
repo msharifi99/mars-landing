@@ -54,8 +54,7 @@ class Player extends Ellipse {
     const isAnyKeyDown = this.cursors.down.isDown || this.cursors.left.isDown || this.cursors.right.isDown
 
     if (isBodyOnFloor && isAnyKeyDown) {
-      initialAcc.set(7000, -25000)
-
+      initialAcc.set(7000, -20000)
       const initializer = this.scene.input.keyboard.keys.filter(v => Boolean(v) && v.isDown)[0]
       this.initializerKeyCode = initializer.keyCode
       initializer.once(Phaser.Input.Keyboard.Events.UP, () => {
