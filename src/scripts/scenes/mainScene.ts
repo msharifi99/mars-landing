@@ -121,8 +121,7 @@ export default class MainScene extends Phaser.Scene {
           new Platform(
             this,
             this.calculatePlatformXMargin(0) * index + 100,
-            index === 0 ? zeroY : this.getRandomPlatformHeight(),
-            80
+            index === 0 ? zeroY : this.getRandomPlatformHeight()
           )
       )
 
