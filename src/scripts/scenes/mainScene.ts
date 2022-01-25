@@ -173,8 +173,7 @@ export default class MainScene extends Phaser.Scene {
 
     if (groundToMove) {
       let x = groundToMove.x + groundToMove.width * groundObjects.length
-      groundToMove.setPosition(x, groundToMove.y)
-      groundToMove.body.updateFromGameObject()
+      groundToMove.body.reset(x, groundToMove.y)
     }
   }
 
@@ -190,8 +189,7 @@ export default class MainScene extends Phaser.Scene {
       }
       const xMargin = this.calculatePlatformXMargin()
       const x = this.lastPlatform.x + xMargin
-      platformToMove.setPosition(x, this.getRandomPlatformHeight())
-      platformToMove.body.updateFromGameObject()
+      platformToMove.body.reset(x, this.getRandomPlatformHeight())
       this.lastPlatform = platformToMove
     }
   }
