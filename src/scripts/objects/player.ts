@@ -35,10 +35,9 @@ class Player extends Ellipse {
     }
 
     const distanceFromPlatformCenter = Math.abs(this.x - Number(this.landedPlatform?.x))
-    if (isBodyOnFloor && this.landedPlatform && distanceFromPlatformCenter > 0.05) {
-      const x = (this.landedPlatform.x - this.x) / (timeFrame / 2)
-      this.setPosition(this.x + x, this.y)
-      this.body.updateFromGameObject()
+    if (isBodyOnFloor && this.landedPlatform && distanceFromPlatformCenter > 0.1) {
+      const step = (this.landedPlatform.x - this.x) / (timeFrame / 2)
+      this.body.reset(this.x + step, this.y)
       return
     }
 
