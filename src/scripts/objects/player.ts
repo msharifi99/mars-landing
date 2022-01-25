@@ -12,8 +12,8 @@ class Player extends Ellipse {
   landedPlatform: Platform | undefined
   initializerKeyCode: number | undefined
   constructor(scene: Scene, x, y) {
-    const width = 60
-    const height = 100
+    const width = 40
+    const height = 66
     super(scene, x, y, width, height, 0x777777)
 
     this.scene = scene
